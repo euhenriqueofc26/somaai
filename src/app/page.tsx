@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createWorker } from "tesseract.js";
-import { Camera, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 function extractPrice(text: string): number | null {
   const cleaned = text
@@ -122,16 +122,10 @@ export default function Home() {
       const { data } = await workerRef.current.recognize(canvas);
       const text = data.text.trim();
 
-      if (!text) {
-        setErrorMsg("Nenhum texto encontrado.");
-        return;
-      }
+      if (!text) { setErrorMsg("Nenhum texto encontrado."); return; }
 
       const price = extractPrice(text);
-      if (price === null) {
-        setErrorMsg("Preço não identificado. Centralize o valor na moldura.");
-        return;
-      }
+      if (price === null) { setErrorMsg("Preço não identificado. Centralize o valor na moldura."); return; }
 
       setTotal((p) => p + price);
       setLastPrice(price);
@@ -143,96 +137,101 @@ export default function Home() {
   };
 
   const handleLimpar = () => {
-    setTotal(0);
-    setLastPrice(null);
-    setErrorMsg("");
+    setTotal(0); setLastPrice(null); setErrorMsg("");
   };
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-black font-sans">
-      <header className="shrink-0 bg-emerald-600 px-5 pb-5 pt-12 text-white">
-        <p className="text-xs font-semibold uppercase tracking-wider text-emerald-100">
+    <div className="fixed inset-0 overflow-hidden bg-black font-sans">
+      <video
+        ref={videoRef}
+        autoPlay playsInline muted
+        className={`absolute inset-0 h-full w-full object-cover ${streamActive ? "opacity-100" : "opacity-0"}`}
+      />
+
+      {!streamActive && !camError && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center">
+          <div className="size-10 animate-spin rounded-full border-4 border-white/30 border-t-emerald-400" />
+        </div>
+      )}
+
+      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+        <div
+          className="relative flex items-center justify-center rounded-xl border-2 border-emerald-400/40 bg-black/10"
+          style={{ width: "78%", height: "26%", boxShadow: "0 0 0 9999px rgba(0,0,0,0.6)" }}
+        >
+          <div className="absolute left-0 top-0 size-5 rounded-tl-lg border-l-[3px] border-t-[3px] border-emerald-400" />
+          <div className="absolute right-0 top-0 size-5 rounded-tr-lg border-r-[3px] border-t-[3px] border-emerald-400" />
+          <div className="absolute bottom-0 left-0 size-5 rounded-bl-lg border-b-[3px] border-l-[3px] border-emerald-400" />
+          <div className="absolute bottom-0 right-0 size-5 rounded-br-lg border-r-[3px] border-b-[3px] border-emerald-400" />
+          <span className="rounded bg-black/50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-400/60">
+            Alinhe o Preço
+          </span>
+        </div>
+      </div>
+
+      {isScanning && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/70 text-emerald-400 backdrop-blur-sm">
+          <Loader2 className="mb-4 size-12 animate-spin" />
+          <p className="animate-pulse font-medium">Lendo etiqueta...</p>
+        </div>
+      )}
+
+      <header className="absolute left-0 right-0 top-0 z-20 bg-gradient-to-b from-black/80 to-transparent px-5 pb-8 pt-14 text-white">
+        <p className="text-xs font-semibold uppercase tracking-wider text-emerald-300">
           Total
         </p>
         <p className="text-4xl font-extrabold tracking-tight">
           {formatBRL(total)}
         </p>
         {lastPrice !== null && (
-          <p className="mt-0.5 text-sm text-emerald-200/70">
+          <p className="mt-0.5 text-sm text-emerald-200/60">
             + {formatBRL(lastPrice)}
           </p>
         )}
       </header>
 
-      <main className="relative flex flex-1 flex-col">
-        <div className="flex flex-1 flex-col p-4">
-          <div className="relative flex w-full flex-1 items-center justify-center overflow-hidden rounded-2xl bg-slate-900 shadow-inner">
-            {camError ? (
-              <div className="flex flex-col items-center p-6 text-slate-400">
-                <p className="text-sm">Câmera indisponível.</p>
-                <button
-                  onClick={startCamera}
-                  className="mt-4 rounded-lg bg-slate-800 px-4 py-2 text-sm text-white hover:bg-slate-700"
-                >
-                  Tentar Novamente
-                </button>
-              </div>
-            ) : (
-              <>
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="size-full object-cover"
-                />
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <div className="relative flex h-16 w-48 items-center justify-center rounded-lg border-2 border-emerald-400/50 bg-black/10">
-                    <div className="absolute left-0 top-0 size-4 rounded-tl-sm border-l-2 border-t-2 border-emerald-400" />
-                    <div className="absolute right-0 top-0 size-4 rounded-tr-sm border-r-2 border-t-2 border-emerald-400" />
-                    <div className="absolute bottom-0 left-0 size-4 rounded-bl-sm border-b-2 border-l-2 border-emerald-400" />
-                    <div className="absolute bottom-0 right-0 size-4 rounded-br-sm border-r-2 border-b-2 border-emerald-400" />
-                    <span className="rounded bg-black/40 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-400/60">
-                      Alinhe o Preço
-                    </span>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {isScanning && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/80 text-emerald-400 backdrop-blur-sm">
-                <Loader2 className="mb-4 size-12 animate-spin" />
-                <p className="animate-pulse font-medium">Lendo etiqueta...</p>
-              </div>
-            )}
-          </div>
-
-          {errorMsg && (
-            <p className="mt-3 text-center text-sm text-red-400">{errorMsg}</p>
-          )}
-
-          <div className="mt-4 flex gap-4">
-            <button
-              onClick={handleLimpar}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-zinc-600 bg-black/25 px-5 py-4 text-sm font-bold text-zinc-400 active:bg-white/10"
-            >
-              Limpar
-            </button>
-            <button
-              onClick={handleSomar}
-              disabled={isScanning || camError}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white shadow-sm active:bg-emerald-700 disabled:opacity-50"
-            >
-              {isScanning ? (
-                <span className="inline-block size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              ) : (
-                <Camera className="size-5" />
-              )}
-              Somar
-            </button>
-          </div>
+      {camError && (
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 text-white">
+          <p className="mb-2 text-sm">Câmera indisponível.</p>
+          <p className="mb-6 text-xs text-white/50">Verifique as permissões do navegador.</p>
+          <button
+            onClick={startCamera}
+            className="rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white active:bg-emerald-700"
+          >
+            Tentar Novamente
+          </button>
         </div>
-      </main>
+      )}
+
+      <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent px-5 pb-8 pt-10">
+        {errorMsg && (
+          <p className="mb-3 text-center text-sm text-red-400">{errorMsg}</p>
+        )}
+
+        <div className="mx-auto flex max-w-md gap-4">
+          <button
+            onClick={handleLimpar}
+            className="flex flex-1 items-center justify-center rounded-xl border border-zinc-600 bg-black/25 px-4 py-4 text-sm font-bold text-zinc-400 active:bg-white/10"
+          >
+            Limpar
+          </button>
+          <button
+            onClick={handleSomar}
+            disabled={isScanning || camError}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-4 text-sm font-bold text-white shadow-sm active:bg-emerald-700 disabled:opacity-40"
+          >
+            {isScanning ? (
+              <span className="inline-block size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            ) : (
+              <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
+              </svg>
+            )}
+            Somar
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
