@@ -203,42 +203,44 @@ export default function Home() {
         )}
       </div>
 
-      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent px-5 pt-14 pb-6">
+      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent px-5 pt-14 pb-8">
         <h1 className="text-center text-lg font-bold tracking-wider text-white">
           somaaiS2
         </h1>
-        <p className="mt-1 text-center text-3xl font-extrabold text-green-400">
-          R$ {total.toFixed(2).replace(".", ",")}
-        </p>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent px-5 pt-8 pb-8">
+      <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent px-5 pt-12 pb-8">
         {lastPrice !== null && (
-          <p className="mb-3 text-center text-sm text-white/60">
-            Último:{" "}
-            <span className="text-base font-bold text-white">
-              R$ {lastPrice.toFixed(2).replace(".", ",")}
-            </span>
+          <p className="mb-1 text-center text-sm text-white/40">último</p>
+        )}
+
+        {lastPrice !== null ? (
+          <p className="text-center text-4xl font-extrabold text-green-400">
+            R$ {total.toFixed(2).replace(".", ",")}
+          </p>
+        ) : (
+          <p className="text-center text-lg text-white/25">
+            Aponte a câmera para o valor e toque em Somar
+          </p>
+        )}
+
+        {lastPrice !== null && (
+          <p className="mt-1 text-center text-xs text-white/30">
+            + R$ {lastPrice.toFixed(2).replace(".", ",")} ({history.length} item(ns))
           </p>
         )}
 
         {errorMsg && (
-          <p className="mb-3 text-center text-sm text-red-400">{errorMsg}</p>
-        )}
-
-        {history.length > 0 && !errorMsg && (
-          <p className="mb-3 text-center text-xs text-white/35">
-            {history.length} item(ns) — R$ {total.toFixed(2).replace(".", ",")}
-          </p>
+          <p className="mt-2 text-center text-sm text-red-400">{errorMsg}</p>
         )}
 
         {showDebug && debugText && (
-          <p className="mb-2 break-all px-4 text-center text-[10px] text-yellow-400/60">
+          <p className="mb-2 mt-1 break-all px-4 text-center text-[10px] text-yellow-400/60">
             OCR: {debugText}
           </p>
         )}
 
-        <div className="mx-auto flex max-w-md gap-3">
+        <div className="mx-auto mt-5 flex max-w-md gap-3">
           <button
             onClick={handleLimpar}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-zinc-600 bg-black/25 px-5 py-3.5 text-sm font-bold text-zinc-400 active:bg-white/10"
